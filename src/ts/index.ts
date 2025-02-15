@@ -16,6 +16,8 @@ const priceRanges: filterOption[] = [
   {id: "501", value: "501-null"}
 ];
 
+const sizeOrder: Record<string, number> = { p: 1, m: 2, g: 3, gg: 4, u: 5 };
+
 function removeDuplicated (product: Product[]): Array<Product> {
   const items: Product[] = [];
 
@@ -91,6 +93,32 @@ function renderCheckBox (type: string, filterOptions: filterOption[]){
   filterOptions.forEach((option) => container.appendChild(createCheckboxLabel(option)));
 }
 
+function openDropdown(){
+  const orderbutton: HTMLElement = document.querySelector('.order-button');
+  const options:HTMLElement = document.querySelector('.select-options');
+
+  orderbutton.addEventListener("click", () => {
+      options.style.display = options.style.display === "block" ? "none" : "block";
+  });
+
+  options.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+
+    if (target.tagName === "LI") {
+      orderbutton.textContent = target.textContent;
+      options.style.display = "none";
+    }
+  });
+
+  document.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+
+    if (!orderbutton.contains(target) && !options.contains(target) && window.innerWidth > 768) {
+      options.style.display = "none";
+    }
+  });
+}
+
 async function main() {
   
   try{
@@ -127,8 +155,6 @@ async function main() {
         });
       });
 
-      const sizeOrder: Record<string, number> = { p: 1, m: 2, g: 3, gg: 4, u: 5 };
-
       availableSizes = availableSizes.sort((a, b) => {
         const isANumber = !isNaN(Number(a.id));
         const isBNumber = !isNaN(Number(b.id));
@@ -147,6 +173,7 @@ async function main() {
       renderCheckBox("color", availableColors);
       renderCheckBox("size", availableSizes);
       renderCheckBox("range", priceRanges);
+      openDropdown();
 
     }
   }catch(err){
