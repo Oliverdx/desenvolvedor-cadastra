@@ -58,76 +58,38 @@ function createProductElement (product: Product): HTMLElement {
 };
 
 function renderCheckBox (type: string, filterOptions: filterOption[]){
-  
-  const container = document.querySelector(`#filter-${type} .options-wrapper`)
-  
-  filterOptions.forEach((option: filterOption) => {
-    const label = document.createElement('label');
-    const checkbox = document.createElement('input');
+  const container = document.querySelector(`#filter-${type} .options-wrapper`);
+  if (!container) return;
 
-    checkbox.type = "checkbox";
-    checkbox.id = option.id;
-    checkbox.name = option.id;
-    checkbox.value = option.value;
-
-    label.appendChild(checkbox);
+  const createCheckboxLabel = (option: filterOption) => {
+    const label = document.createElement("label");
     label.setAttribute("for", option.id);
 
-    if(type === "range"){
-      const range = option.value.split("-");
-      const rangeLabel =
-        range[1] !== "null" ? ` de R$ ${range[0]} até R$${range[1]}` : ` a partir de R$${range[0]}`
-
-      label.appendChild(document.createTextNode(rangeLabel));
-    }else{
-      label.appendChild(document.createTextNode(option.label));
-    }
-
-    container?.appendChild(label);
-
-  });
-}
-
-function filterProducts(products: Product[]): Product[] {
-  const selectedRanges = Array.from(document.querySelectorAll<HTMLInputElement>('input[name="price"]:checked'))
-    .map(input => input.value);
-
-  if (!selectedRanges.length) return products;
-
-  return products.filter(product => {
-    const productPrice = product.price;
-    
-    return selectedRanges.some(range => {
-      const [min, max] = range.split("-").map(Number);
-      return max ? productPrice >= min && productPrice <= max : productPrice >= min;
+    const checkbox = Object.assign(document.createElement("input"), {
+      type: "checkbox",
+      id: option.id,
+      name: option.id,
+      value: option.value,
     });
-  });
+
+    const labelText =
+      type === "range"
+        ? formatRangeLabel(option.value)
+        : option.label;
+
+    label.append(checkbox, document.createTextNode(labelText));
+    return label;
+  };
+
+  const formatRangeLabel = (value: string) => {
+    const [min, max] = value.split("-");
+    return max !== "null"
+      ? ` de R$ ${min} até R$${max}`
+      : ` a partir de R$${min}`;
+  };
+
+  filterOptions.forEach((option) => container.appendChild(createCheckboxLabel(option)));
 }
-
-document.addEventListener("DOMContentLoaded", function () {
-  const button: HTMLElement = document.querySelector(".select-button");
-  const options: HTMLElement = document.querySelector(".select-options");
-
-  button.addEventListener("click", () => {
-    options.style.display = options.style.display === "block" ? "none" : "block";
-  });
-
-  options.addEventListener("click", (e) => {
-    const target = e.target as HTMLElement;
-
-    if (target.tagName === "LI") {
-      button.textContent = target.textContent;
-      options.style.display = "none";
-    }
-  });
-
-  document.addEventListener("click", (e) => {
-    const target = e.target as HTMLElement;
-    if (!button.contains(target) && !options.contains(target)) {
-      options.style.display = "none";
-    }
-  });
-});
 
 async function main() {
   
@@ -165,12 +127,27 @@ async function main() {
         });
       });
 
+      const sizeOrder: Record<string, number> = { p: 1, m: 2, g: 3, gg: 4, u: 5 };
+
+      availableSizes = availableSizes.sort((a, b) => {
+        const isANumber = !isNaN(Number(a.id));
+        const isBNumber = !isNaN(Number(b.id));
+
+        if (!isANumber && !isBNumber) {
+          return (sizeOrder[a.id] || 99) - (sizeOrder[b.id] || 99);
+        }
+        if (!isANumber) return -1;
+        if (!isBNumber) return 1;
+        
+        return Number(a.id) - Number(b.id);
+      });
+
       //RenderFilters
 
       renderCheckBox("color", availableColors);
       renderCheckBox("size", availableSizes);
       renderCheckBox("range", priceRanges);
-      
+
     }
   }catch(err){
     throw new Error(err);

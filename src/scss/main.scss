@@ -1,6 +1,4 @@
 @import "reset";
-@import "responsive";
-@import "fonts";
 
 header{
   display: flex;
@@ -31,12 +29,47 @@ main{
   margin: 39px auto 35px;
 }
 
+.mobile-filters{
+  display: none;
+}
+
+#modal{
+  display: none;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #FFF;
+  z-index: 9;
+
+  .modal-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 64px;
+    padding: 0 10px;
+    box-sizing: border-box;
+    background-color: #FFF;
+    z-index: 9;
+    border-bottom: 1px solid #666;
+  }
+  
+  .modal-title{
+    font-size: 28px;
+    color: #666;
+    text-transform: uppercase;
+  }
+}
+
 #page-header{
   display: flex;
   justify-content: space-between;
   width: 100%;
+  max-width: calc(100% - 36px);
   height:42px;
-  margin-bottom: 54px;
+  padding: 0 16px;
+  margin: 0 auto 54px;
 
   .page-title{
     font-size: 32px;
@@ -50,7 +83,7 @@ main{
     font-family: "Open sans", Arial, sans-serif;
   }
   
-  .select-button {
+  .order-button, [class^="modal-"]{
     width: 100%;
     height: 42px;
     padding: 0 10px;
@@ -64,9 +97,10 @@ main{
   
   .select-options {
     display: none;
-    list-style: none;
     position: absolute;
-    width: 100%;
+    width: 142px;
+    box-sizing: border-box;
+    list-style: none;
     font-size: 16px;
     background: #fff;
     border: 1px solid #333;
@@ -88,11 +122,15 @@ main{
 
 #content{
   display: flex;
+  padding: 0 16px;
 }
 
 
-#sidebar{
+.sidebar{
+  display: flex;
+  flex-direction: column;
   width: 157px;
+  font-size: 14px;
 
   .sidebar-title{
     font-weight: 400;
@@ -219,3 +257,10 @@ footer{
   color: #FFF;
   background: #000;
 }
+
+// TO KEEP THE CSS CORRECT WITHOUT USE
+// ANY !IMPORTANT TAGS MOVE THE IMPORTS UNDER THE CODE
+// SO KEEP THE PRIORITY OF THE CSS
+
+@import "responsive";
+@import "fonts";

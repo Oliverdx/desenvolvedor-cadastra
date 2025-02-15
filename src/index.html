@@ -22,19 +22,37 @@
   </header>
 
   <main>
+
+    <div id="modal">
+      <div class="modal-header">
+        <span class="modal-title"></span>
+        <button class="close-btn">CLOSE</button>
+      </div>
+      <div id="modal-content"></div>
+    </div>
+
     <section id="page-header">
       <h2 class="page-title">Blusas</h2>
+
+      <div class="mobile-filters">
+        <button class="modal-filter">Filtrar</button>
+        <button class="modal-order">Ordenar</button>
+      </div>
+
       <div class="product-order">
-        <button class="select-button">Ordenar Por:</button>
-        <ul class="select-options">
-          <li value="">Mais recente</li>
-          <li value="">Menor Preço</li>
-          <li value="">Maior Preço</li>
-        </ul>
+        <button class="order-button">Ordenar Por:</button>
+          <ul class="select-options">
+            <li value="">Mais recente</li>
+            <li value="">Menor Preço</li>
+            <li value="">Maior Preço</li>
+          </ul>
       </div>
     </section>
+
+
+
     <div id="content">
-      <aside id="sidebar">
+      <aside class="sidebar">
         <section id="filter-color">
           <h3 class="sidebar-title">Cores</h3>
           <div class="options-wrapper"></div>
