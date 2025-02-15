@@ -51,7 +51,7 @@ dt,
 dd,
 ol,
 ul,
-li,
+li, 
 fieldset,
 form,
 label,
@@ -87,8 +87,8 @@ video {
   margin: 0;
   padding: 0;
   border: 0;
-  font-size: 100%;
-  font-family: 'Open sans', sans-serif;
+  font-size: 14px;
+  font-family: 'Open sans', Arial, sans-serif;
   vertical-align: baseline;
 }
 /* HTML5 display-role reset for older browsers */
