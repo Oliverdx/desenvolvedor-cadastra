@@ -22,11 +22,34 @@
   </header>
 
   <main>
-
-    <section id="product-list">
-
+    <section id="page-header">
+      <h2 class="page-title">Blusas</h2>
+      <div class="product-order">
+        <button class="select-button">Ordenar Por:</button>
+        <ul class="select-options">
+          <li value="">Mais recente</li>
+          <li value="">Menor Preço</li>
+          <li value="">Maior Preço</li>
+        </ul>
+      </div>
     </section>
-    
+    <div id="content">
+      <aside id="sidebar">
+        <section id="filter-color">
+          <h3 class="sidebar-title">Cores</h3>
+          <div class="options-wrapper"></div>
+        </section>
+        <section id="filter-size">
+          <h3 class="sidebar-title">Tamanhos</h3>
+          <div class="options-wrapper"></div>
+        </section>
+        <section id="filter-range">
+          <h3 class="sidebar-title">Faixa de Preço</h3>
+          <div class="options-wrapper"></div>
+        </section>
+      </aside>
+      <section id="product-list" />
+    </div>
   </main>
 
   <footer>
