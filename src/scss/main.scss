@@ -20,6 +20,23 @@ header{
       width: 165px;
       height: auto;
     }
+
+    #cart-btn {
+      position: relative;
+    }
+    
+    .cart-qtd {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        width: 13px;
+        height: 13px;
+        border-radius: 100%;
+        font-size: 10px;
+        line-height: 13px;
+        background: #FB953E;
+        color: #FFF;
+    }
   }
 }
 
@@ -241,6 +258,12 @@ input[type="checkbox"]{
       font-weight: 700;
       background-color: #000;
       color: #FFF;
+      cursor: pointer;
+
+      &:hover{
+        color: #FFF;
+        background: orange;
+      }
     }
   }
 

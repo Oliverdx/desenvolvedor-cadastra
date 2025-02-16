@@ -8,6 +8,11 @@ interface filterOption {
   label?: string
 }
 
+interface cartItem {
+  id: string,
+  qtd: string
+}
+
 const priceRanges: filterOption[] = [
   {id: "50", value: "0-50"},
   {id: "150", value: "51-150"},
@@ -52,6 +57,7 @@ function createProductElement (product: Product): HTMLElement {
 
   const button = document.createElement("button");
   button.setAttribute("class", "product-button");
+  button.setAttribute("data-item", product.id);
   button.textContent = "Comprar";
 
   productWrapper.append(img, title, price, desc, button);
@@ -93,7 +99,7 @@ function renderCheckBox (type: string, filterOptions: filterOption[]){
   filterOptions.forEach((option) => container.appendChild(createCheckboxLabel(option)));
 }
 
-function openDropdown(){
+function orderDropdown(){
   const orderbutton: HTMLElement = document.querySelector('.order-button');
   const options:HTMLElement = document.querySelector('.select-options');
 
@@ -119,15 +125,70 @@ function openDropdown(){
   });
 }
 
-async function main() {
-  
+async function getProducts(){
   try{
-    let availableColors: filterOption[] = [];
-    let availableSizes: filterOption[] = [];
-
     const productList: Product[] = await fetch(`${serverUrl}/products`).then(response =>
       response.json()
     );
+  
+    return productList;
+  }catch(err){
+    return [];
+  }
+}
+
+function cartQtd(){
+  const cartItems = JSON.parse(localStorage.getItem("cart")) || [];
+  let cartQtd = 0;
+
+  cartItems.forEach((item: cartItem) => {
+    cartQtd = cartQtd + parseInt(item.qtd);
+  });
+
+  if(cartItems.length > 0 && cartQtd >= 1){
+    let cart: HTMLElement = document.querySelector('.cart-qtd');
+
+    if(!cart){
+      cart = document.createElement("span");
+      cart.setAttribute("class", "cart-qtd");
+      
+    }
+
+    cart.textContent = cartQtd.toString();
+    document.getElementById("cart-btn").append(cart);
+  }
+}
+
+function addItemToCart(){
+  document.querySelectorAll('.product-button').forEach(button => {
+    button.addEventListener('click', elem => {
+      const target = elem.target as HTMLElement;
+      const productId: string = target.getAttribute("data-item");
+
+      let cartItems = JSON.parse(localStorage.getItem("cart")) || [];
+
+      if(cartItems.every((item: cartItem) => item.id !== productId)){
+        cartItems.push({id: productId, qtd: 1})
+      }else{
+        cartItems = cartItems.map((item: cartItem) => {
+          if(item.id === productId)
+            return {...item, qtd: item.qtd+1}
+          return item;
+        });
+      }
+
+      localStorage.setItem("cart", JSON.stringify(cartItems));
+      cartQtd();
+    });
+  });
+}
+
+async function main() {
+  
+  try{
+    const productList: Product[] = await getProducts();
+    let availableColors: filterOption[] = [];
+    let availableSizes: filterOption[] = [];
 
     const productContainer = document.getElementById("product-list");
 
@@ -173,7 +234,9 @@ async function main() {
       renderCheckBox("color", availableColors);
       renderCheckBox("size", availableSizes);
       renderCheckBox("range", priceRanges);
-      openDropdown();
+      orderDropdown();
+      addItemToCart();
+      cartQtd();
 
     }
   }catch(err){
