@@ -278,6 +278,66 @@ function renderProducts (productList: Product[]){
 
 }
 
+function setupProductRendering(productList: Product[]) {
+  const productContainer = document.getElementById("product-list");
+  const loadMoreButton = document.getElementById("more-products") as HTMLButtonElement;
+  
+  if (!productContainer || !loadMoreButton) return;
+
+  let itemsToShow = window.innerWidth < 768 ? 2 : productList.length;
+  renderProducts(productList.slice(0, itemsToShow));
+
+  if (itemsToShow < productList.length) {
+    loadMoreButton.style.display = "block";
+  } else {
+    loadMoreButton.style.display = "none";
+  }
+
+  loadMoreButton.onclick = () => {
+    itemsToShow += 2; // Increase items count
+    renderProducts(productList.slice(0, itemsToShow));
+
+    // Hide button when all products are shown
+    if (itemsToShow >= productList.length) {
+      loadMoreButton.style.display = "none";
+    }
+  };
+
+  // Recalculate when window resizes
+  window.onresize = () => {
+    const newItemsToShow = window.innerWidth < 768 ? 2 : productList.length;
+    if (newItemsToShow !== itemsToShow) {
+      itemsToShow = newItemsToShow;
+      renderProducts(productList.slice(0, itemsToShow));
+    }
+  };
+}
+
+function modalFunction(){
+  const modal = document.querySelector('#modal') as HTMLElement;
+  const modalContentWrapper = document.getElementById('modal-content') as HTMLElement;
+  const closeModalBtn = document.querySelector(".closemodal-btn") as HTMLElement;
+  const modalTitle = document.querySelector('.modal-title') as HTMLElement;
+  let content: HTMLElement;
+
+  closeModalBtn.addEventListener('click', () => modal.style.display = "none");
+
+  document.querySelectorAll("[class^='modalbtn-']").forEach(btn =>{
+    btn.addEventListener('click', () =>{
+      if(btn.className.indexOf("filter") > 1){
+        modalTitle.innerText = "Filtrar";
+        content = document.querySelector('.sidebar');
+      }else{
+        modalTitle.innerText = "Ordenar";
+        content = document.querySelector('.select-options');
+      }
+      modalContentWrapper.innerHTML = "";
+      modalContentWrapper.appendChild(content.cloneNode(true));
+
+      modal.style.display = modal.style.display === "none" ? "block" : "none";
+    });
+  });
+}
 
 async function main() {
   
@@ -286,8 +346,6 @@ async function main() {
     let availableColors: filterOption[] = [];
     let availableSizes: filterOption[] = [];
     let productListNormalized: Product[] = [];
-
-    // const productContainer = document.getElementById("product-list");
 
     if(productList.length){
       productListNormalized = removeDuplicated(productList); // remove the duplicated products;
@@ -312,8 +370,7 @@ async function main() {
 
       availableSizes = orderSizes(availableSizes);
 
-
-      renderProducts(productListNormalized);
+      setupProductRendering(productListNormalized);
 
       //RenderFilters
       renderCheckBox("color", availableColors);
@@ -321,6 +378,7 @@ async function main() {
       renderCheckBox("range", priceRanges);
       orderDropdown();
       cartQtd();
+      modalFunction();
 
       document.querySelectorAll('input[type="checkbox"]').forEach((checkbox: HTMLElement) => {
         checkbox.addEventListener("change", event  => {

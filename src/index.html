@@ -23,10 +23,12 @@
 
   <main>
 
-    <div id="modal">
-      <div class="modal-header">
+    <div id="modal" style="display: none;">
+      <div class="modalheader">
         <span class="modal-title"></span>
-        <button class="close-btn">CLOSE</button>
+        <button class="closemodal-btn">
+          <img src="./img/close.svg" />
+        </button>
       </div>
       <div id="modal-content"></div>
     </div>
@@ -35,8 +37,8 @@
       <h2 class="page-title">Blusas</h2>
 
       <div class="mobile-filters">
-        <button class="modal-filter">Filtrar</button>
-        <button class="modal-order">Ordenar</button>
+        <button class="modalbtn-filter">Filtrar</button>
+        <button class="modalbtn-order">Ordenar</button>
       </div>
 
       <div class="product-order">
@@ -48,8 +50,6 @@
           </ul>
       </div>
     </section>
-
-
 
     <div id="content">
       <aside class="sidebar">
@@ -66,7 +66,8 @@
           <div class="options-wrapper"></div>
         </section>
       </aside>
-      <section id="product-list" />
+      <section id="product-list"></section>
+      <button id="more-products">Carregar Mais</button>
     </div>
   </main>
 
