@@ -58,7 +58,7 @@ function createProductElement (product: Product): HTMLElement {
   desc.textContent = `Até ${product.parcelamento[0]}x de R$${product.parcelamento[1].toFixed(2)}`;
 
   const button = document.createElement("button");
-  button.setAttribute("class", "product-button");
+  button.setAttribute("class", "product-button primary-btn");
   button.setAttribute("data-item", product.id);
   button.addEventListener("click", () => addItemToCart(product.id));
   button.textContent = "Comprar";
@@ -217,18 +217,18 @@ function handleCheckboxChange(event: Event, products:Product[]) {
   return appliedFilter;
 }
 
-// Função que aplica os filtros
+
 function applyFilters(products: Product[]) {
   const productsFiltered = products.filter((product) => {
-    // Filtrando por tamanho
+    // Filter by size
     const sizeMatch =
       selectedFilters.sizes.size === 0 || product.size.some(size => selectedFilters.sizes.has(size.toLowerCase()));
 
-    // Filtrando por cor
+    // Filter by color
     const colorMatch =
       selectedFilters.colors.size === 0 || selectedFilters.colors.has(product.color.toLowerCase());
 
-    // Filtrando por faixa de preço
+    // Filter by price range
     const priceMatch =
       selectedFilters.priceRange.size === 0 ||
       Array.from(selectedFilters.priceRange).some(price => {
@@ -238,11 +238,13 @@ function applyFilters(products: Product[]) {
 
     return sizeMatch && colorMatch && priceMatch;
   });
-  console.log('productsFiltered', productsFiltered);
+
   return productsFiltered;
 }
 
+  // Order sizes by convention
 function orderSizes (sizesArr: filterOption[]){
+
   return sizesArr.sort((a: filterOption, b: filterOption) => {
     const isANumber = !isNaN(Number(a.id));
     const isBNumber = !isNaN(Number(b.id));
@@ -278,7 +280,8 @@ function renderProducts (productList: Product[]){
 
 }
 
-function setupProductRendering(productList: Product[]) {
+// Helper to render the products correctly by screen size and load more
+function productRenderHelper(productList: Product[]) {
   const productContainer = document.getElementById("product-list");
   const loadMoreButton = document.getElementById("more-products") as HTMLButtonElement;
   
@@ -313,14 +316,15 @@ function setupProductRendering(productList: Product[]) {
   };
 }
 
-function modalFunction(){
+function modalFunction(productList: Product[]){
   const modal = document.querySelector('#modal') as HTMLElement;
   const modalContentWrapper = document.getElementById('modal-content') as HTMLElement;
-  const closeModalBtn = document.querySelector(".closemodal-btn") as HTMLElement;
+  const closeModalBtn = document.querySelectorAll(".closemodal-btn");
   const modalTitle = document.querySelector('.modal-title') as HTMLElement;
+  const modalFilterBtnWrapper = document.getElementById("modal-filter-btns");
   let content: HTMLElement;
 
-  closeModalBtn.addEventListener('click', () => modal.style.display = "none");
+  closeModalBtn.forEach(btn => btn.addEventListener('click', () => modal.style.display = "none"));
 
   document.querySelectorAll("[class^='modalbtn-']").forEach(btn =>{
     btn.addEventListener('click', () =>{
@@ -330,11 +334,26 @@ function modalFunction(){
       }else{
         modalTitle.innerText = "Ordenar";
         content = document.querySelector('.select-options');
+        modalFilterBtnWrapper.style.display = "none";
       }
       modalContentWrapper.innerHTML = "";
       modalContentWrapper.appendChild(content.cloneNode(true));
 
+      if(btn.className.indexOf("filter") > 1){
+        filterListener(productList);
+        modalFilterBtnWrapper.style.display = "flex";
+      }
+
       modal.style.display = modal.style.display === "none" ? "block" : "none";
+    });
+  });
+}
+
+function filterListener(productList: Product[]){
+  document.querySelectorAll('input[type="checkbox"]').forEach((checkbox: HTMLElement) => {
+    checkbox.addEventListener("change", event  => {
+      const filteredProducts = handleCheckboxChange(event, productList);
+      productRenderHelper(filteredProducts);
     });
   });
 }
@@ -370,22 +389,19 @@ async function main() {
 
       availableSizes = orderSizes(availableSizes);
 
-      setupProductRendering(productListNormalized);
+      productRenderHelper(productListNormalized);
 
       //RenderFilters
       renderCheckBox("color", availableColors);
       renderCheckBox("size", availableSizes);
       renderCheckBox("range", priceRanges);
+      filterListener(productListNormalized); //Desktop filter Listener
       orderDropdown();
       cartQtd();
-      modalFunction();
+      modalFunction(productListNormalized);
 
-      document.querySelectorAll('input[type="checkbox"]').forEach((checkbox: HTMLElement) => {
-        checkbox.addEventListener("change", event  => {
-          const filteredProducts = handleCheckboxChange(event, productListNormalized);
-          renderProducts(filteredProducts);
-        });
-      });
+      // Filter function listener
+
 
     }
   }catch(err){
