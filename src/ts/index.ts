@@ -13,8 +13,6 @@ interface cartItem {
   qtd: string
 }
 
-type PriceRange = { min: number; max: number | null };
-
 const priceRanges: filterOption[] = [
   {id: "50", value: "0-50"},
   {id: "150", value: "51-150"},
@@ -275,6 +273,11 @@ function renderProducts (productList: Product[]){
     // Fade effect
     setTimeout(() => {
       productContainer.style.opacity = "1";
+
+      if(productList.length === 0){
+        productContainer.appendChild(document.createTextNode("Nenhum produto encontrado"));
+        return;
+      }
     }, 100);
   }, 100);
 
@@ -282,12 +285,10 @@ function renderProducts (productList: Product[]){
 
 // Helper to render the products correctly by screen size and load more
 function productRenderHelper(productList: Product[]) {
-  const productContainer = document.getElementById("product-list");
-  const loadMoreButton = document.getElementById("more-products") as HTMLButtonElement;
-  
-  if (!productContainer || !loadMoreButton) return;
+  const loadMoreButton = document.getElementById("more-products") as HTMLElement;
 
   let itemsToShow = window.innerWidth < 768 ? 2 : productList.length;
+  
   renderProducts(productList.slice(0, itemsToShow));
 
   if (itemsToShow < productList.length) {
@@ -322,9 +323,18 @@ function modalFunction(productList: Product[]){
   const closeModalBtn = document.querySelectorAll(".closemodal-btn");
   const modalTitle = document.querySelector('.modal-title') as HTMLElement;
   const modalFilterBtnWrapper = document.getElementById("modal-filter-btns");
+  const modalForm = document.getElementById('modalForm');
   let content: HTMLElement;
 
-  closeModalBtn.forEach(btn => btn.addEventListener('click', () => modal.style.display = "none"));
+  const modalClose = () => {
+    modal.style.display = "none"
+    document.querySelector("body").style.overflow = "";
+  };
+
+
+  modalForm.addEventListener('submit', event => event.preventDefault());
+
+  closeModalBtn.forEach(btn => btn.addEventListener('click', modalClose));
 
   document.querySelectorAll("[class^='modalbtn-']").forEach(btn =>{
     btn.addEventListener('click', () =>{
@@ -344,9 +354,28 @@ function modalFunction(productList: Product[]){
         modalFilterBtnWrapper.style.display = "flex";
       }
 
-      modal.style.display = modal.style.display === "none" ? "block" : "none";
+      if(modal.style.display === "none"){
+        modal.style.display = "block"
+        document.querySelector("body").style.overflow = "hidden";
+      }else{
+        closeModalBtn.forEach(btn => btn.removeEventListener("click", modalClose));
+        modal.style.display = "none";
+        document.querySelector("body").style.overflow = "";
+      }
+
+    
     });
   });
+}
+
+function clearForm(productList: Product[]){
+  const modalForm = document.getElementById('modalForm');
+  modalForm.addEventListener('submit', event => event.preventDefault());
+  const inputList = new Set(Array.from(modalForm.getElementsByTagName('input')));
+  
+  inputList.forEach(input => input.checked = false);
+
+  productRenderHelper(productList)
 }
 
 function filterListener(productList: Product[]){
@@ -402,6 +431,7 @@ async function main() {
 
       // Filter function listener
 
+      document.getElementById("clean-filter").addEventListener("click", () => clearForm(productListNormalized));
 
     }
   }catch(err){

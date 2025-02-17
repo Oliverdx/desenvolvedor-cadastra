@@ -43,7 +43,8 @@ header{
 main{
   width: 100%;
   max-width: 1176px;
-  margin: 39px auto 35px;
+  margin: 39px auto 0;
+  padding-bottom: 68px;
 }
 
 .mobile-filters{
@@ -55,7 +56,7 @@ main{
   position: absolute;
   top: 0;
   width: 100%;
-  height: 100%;
+  height: 100vh;
   background-color: #FFF;
   z-index: 9;
 
@@ -269,7 +270,6 @@ input[type="checkbox"]{
   margin: 17px 0 0;
   text-transform: uppercase;
   font-weight: 700;
-  color: #FFF;
   cursor: pointer;
   grid-area: load;
 }
@@ -290,23 +290,12 @@ input[type="checkbox"]{
   background: #FFF;
   border: 1px solid #00000080;
   color: #00000080;
-
-  &:hover{
-    background: #000;
-    color: #FFF;
-  }
 }
 
 .orange-btn{
   background: #FB953E;
   border: 1px solid #FB953E;
   color: #FFF;
-
-  &:hover{
-    background: #FFF;
-    border: 1px solid #00000080;
-    color: #00000080;
-  }
 }
 
 #more-products{
@@ -351,6 +340,8 @@ input[type="checkbox"]{
 }
 
 footer{
+  position: absolute;
+  bottom: 0;
   width: 100%;
   height: 33px;
   font-size: 14px;
