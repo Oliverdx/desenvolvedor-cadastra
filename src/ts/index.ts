@@ -259,12 +259,23 @@ function orderSizes (sizesArr: filterOption[]){
 
 function renderProducts (productList: Product[]){
   const productContainer = document.getElementById("product-list");
-  productContainer.innerHTML = ""; // Limpa o container
+  productContainer.style.opacity = "0";
+  productContainer.style.transition = "opacity 0.1s ease-out";
 
-  productList.forEach(product => {
-    const productElement = createProductElement(product);
-    productContainer.appendChild(productElement);
-  });
+  setTimeout(() => {
+    productContainer.innerHTML = ""; // under the roof clear
+
+    productList.forEach(product => {
+      const productElement = createProductElement(product);
+      productContainer.appendChild(productElement);
+    });
+
+    // Fade effect
+    setTimeout(() => {
+      productContainer.style.opacity = "1";
+    }, 100);
+  }, 100);
+
 }
 
 
