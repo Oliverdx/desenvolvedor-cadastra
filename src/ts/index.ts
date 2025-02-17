@@ -13,6 +13,8 @@ interface cartItem {
   qtd: string
 }
 
+type PriceRange = { min: number; max: number | null };
+
 const priceRanges: filterOption[] = [
   {id: "50", value: "0-50"},
   {id: "150", value: "51-150"},
@@ -58,6 +60,7 @@ function createProductElement (product: Product): HTMLElement {
   const button = document.createElement("button");
   button.setAttribute("class", "product-button");
   button.setAttribute("data-item", product.id);
+  button.addEventListener("click", () => addItemToCart(product.id));
   button.textContent = "Comprar";
 
   productWrapper.append(img, title, price, desc, button);
@@ -71,11 +74,13 @@ function renderCheckBox (type: string, filterOptions: filterOption[]){
 
   const createCheckboxLabel = (option: filterOption) => {
     const label = document.createElement("label");
-    label.setAttribute("for", option.id);
+    const checkboxWrapper = document.createElement("div");
+
+    label.setAttribute("for", `${type}-${option.id}`);
 
     const checkbox = Object.assign(document.createElement("input"), {
       type: "checkbox",
-      id: option.id,
+      id: `${type}-${option.id}`,
       name: option.id,
       value: option.value,
     });
@@ -85,8 +90,9 @@ function renderCheckBox (type: string, filterOptions: filterOption[]){
         ? formatRangeLabel(option.value)
         : option.label;
 
-    label.append(checkbox, document.createTextNode(labelText));
-    return label;
+    label.append(document.createTextNode(labelText));
+    checkboxWrapper.append(checkbox, label);
+    return checkboxWrapper;
   };
 
   const formatRangeLabel = (value: string) => {
@@ -159,29 +165,108 @@ function cartQtd(){
   }
 }
 
-function addItemToCart(){
-  document.querySelectorAll('.product-button').forEach(button => {
-    button.addEventListener('click', elem => {
-      const target = elem.target as HTMLElement;
-      const productId: string = target.getAttribute("data-item");
+function addItemToCart(itemId: string){
 
-      let cartItems = JSON.parse(localStorage.getItem("cart")) || [];
+    let cartItems = JSON.parse(localStorage.getItem("cart")) || [];
 
-      if(cartItems.every((item: cartItem) => item.id !== productId)){
-        cartItems.push({id: productId, qtd: 1})
-      }else{
-        cartItems = cartItems.map((item: cartItem) => {
-          if(item.id === productId)
-            return {...item, qtd: item.qtd+1}
-          return item;
-        });
-      }
+    if(cartItems.every((item: cartItem) => item.id !== itemId)){
+      cartItems.push({id: itemId, qtd: 1})
+    }else{
+      cartItems = cartItems.map((item: cartItem) => {
+        if(item.id === itemId)
+          return {...item, qtd: item.qtd+1}
+        return item;
+      });
+    }
 
-      localStorage.setItem("cart", JSON.stringify(cartItems));
-      cartQtd();
-    });
+    localStorage.setItem("cart", JSON.stringify(cartItems));
+    cartQtd();
+
+}
+
+// Estado dos filtros
+const selectedFilters = {
+  sizes: new Set<string>(),
+  colors: new Set<string>(),
+  priceRange: new Set<string>()
+};
+
+// Função para converter `value` do filtro de preço
+function parsePriceRange(value: string): { min: number; max: number | null } {
+  const [minStr, maxStr] = value.split("-");
+  const min = parseInt(minStr, 10);
+  const max = maxStr === "null" ? null : parseInt(maxStr, 10);
+  return { min, max };
+}
+
+function handleCheckboxChange(event: Event, products:Product[]) {
+  const target = event.target as HTMLInputElement;
+  const [type, id] = target.id.split("-"); // Exemplo: "color-preto" → ["color", "preto"]
+
+  if (!type || !id) return;
+
+  if (type === "size") {
+    selectedFilters.sizes.has(id) ? selectedFilters.sizes.delete(id) : selectedFilters.sizes.add(id);
+  } else if (type === "color") {
+    selectedFilters.colors.has(id) ? selectedFilters.colors.delete(id) : selectedFilters.colors.add(id);
+  } else if (type === "range") {
+    selectedFilters.priceRange.has(target.value) ? selectedFilters.priceRange.delete(target.value) : selectedFilters.priceRange.add(target.value);
+  }
+
+  const appliedFilter = applyFilters(products);
+  return appliedFilter;
+}
+
+// Função que aplica os filtros
+function applyFilters(products: Product[]) {
+  const productsFiltered = products.filter((product) => {
+    // Filtrando por tamanho
+    const sizeMatch =
+      selectedFilters.sizes.size === 0 || product.size.some(size => selectedFilters.sizes.has(size.toLowerCase()));
+
+    // Filtrando por cor
+    const colorMatch =
+      selectedFilters.colors.size === 0 || selectedFilters.colors.has(product.color.toLowerCase());
+
+    // Filtrando por faixa de preço
+    const priceMatch =
+      selectedFilters.priceRange.size === 0 ||
+      Array.from(selectedFilters.priceRange).some(price => {
+        const { min, max } = parsePriceRange(price);
+        return product.price >= min && (max === null || product.price <= max);
+      });
+
+    return sizeMatch && colorMatch && priceMatch;
+  });
+  console.log('productsFiltered', productsFiltered);
+  return productsFiltered;
+}
+
+function orderSizes (sizesArr: filterOption[]){
+  return sizesArr.sort((a: filterOption, b: filterOption) => {
+    const isANumber = !isNaN(Number(a.id));
+    const isBNumber = !isNaN(Number(b.id));
+
+    if (!isANumber && !isBNumber) {
+      return (sizeOrder[a.id] || 99) - (sizeOrder[b.id] || 99);
+    }
+    if (!isANumber) return -1;
+    if (!isBNumber) return 1;
+    
+    return Number(a.id) - Number(b.id);
   });
 }
+
+function renderProducts (productList: Product[]){
+  const productContainer = document.getElementById("product-list");
+  productContainer.innerHTML = ""; // Limpa o container
+
+  productList.forEach(product => {
+    const productElement = createProductElement(product);
+    productContainer.appendChild(productElement);
+  });
+}
+
 
 async function main() {
   
@@ -189,16 +274,14 @@ async function main() {
     const productList: Product[] = await getProducts();
     let availableColors: filterOption[] = [];
     let availableSizes: filterOption[] = [];
+    let productListNormalized: Product[] = [];
 
-    const productContainer = document.getElementById("product-list");
+    // const productContainer = document.getElementById("product-list");
 
     if(productList.length){
-      const itemList = removeDuplicated(productList); // remove the duplicated products;
+      productListNormalized = removeDuplicated(productList); // remove the duplicated products;
 
-      itemList.forEach(product => {
-        const productElement = createProductElement(product);
-        productContainer.appendChild(productElement);
-
+      productListNormalized.forEach(product => {
         if(availableColors.every(elem => elem.label !== product.color))
           availableColors.push({
             id: product.color.toLowerCase(),
@@ -216,27 +299,24 @@ async function main() {
         });
       });
 
-      availableSizes = availableSizes.sort((a, b) => {
-        const isANumber = !isNaN(Number(a.id));
-        const isBNumber = !isNaN(Number(b.id));
+      availableSizes = orderSizes(availableSizes);
 
-        if (!isANumber && !isBNumber) {
-          return (sizeOrder[a.id] || 99) - (sizeOrder[b.id] || 99);
-        }
-        if (!isANumber) return -1;
-        if (!isBNumber) return 1;
-        
-        return Number(a.id) - Number(b.id);
-      });
+
+      renderProducts(productListNormalized);
 
       //RenderFilters
-
       renderCheckBox("color", availableColors);
       renderCheckBox("size", availableSizes);
       renderCheckBox("range", priceRanges);
       orderDropdown();
-      addItemToCart();
       cartQtd();
+
+      document.querySelectorAll('input[type="checkbox"]').forEach((checkbox: HTMLElement) => {
+        checkbox.addEventListener("change", event  => {
+          const filteredProducts = handleCheckboxChange(event, productListNormalized);
+          renderProducts(filteredProducts);
+        });
+      });
 
     }
   }catch(err){
