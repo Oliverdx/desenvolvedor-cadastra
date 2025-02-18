@@ -3,7 +3,7 @@ import { renderCheckBox } from "./Checkbox";
 import { orderDropdown, orderSizes, removeDuplicated } from "./Helpers";
 import { clearForm, filterListener, modalFunction } from "./modal";
 import { getProducts, productRenderHelper } from "./Product";
-import { Product, filterOption, cartItem} from "./types";
+import { Product, filterOption } from "./types";
 
 const priceRanges: filterOption[] = [
   {id: "50", value: "0-50"},
@@ -12,7 +12,6 @@ const priceRanges: filterOption[] = [
   {id: "500", value: "301-500"},
   {id: "501", value: "501-null"}
 ];
-
 
 
 async function main() {
@@ -58,12 +57,7 @@ async function main() {
       modalFunction(productListNormalized);
 
       // Filter function listener
-
       document.getElementById("clean-filter").addEventListener("click", () => clearForm(productListNormalized));
-
-      if(window.innerWidth < 768){
-        
-      }
 
     }
   }catch(err){
