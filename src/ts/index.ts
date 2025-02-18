@@ -331,7 +331,6 @@ function modalFunction(productList: Product[]){
     document.querySelector("body").style.overflow = "";
   };
 
-
   modalForm.addEventListener('submit', event => event.preventDefault());
 
   closeModalBtn.forEach(btn => btn.addEventListener('click', modalClose));
@@ -341,6 +340,7 @@ function modalFunction(productList: Product[]){
       if(btn.className.indexOf("filter") > 1){
         modalTitle.innerText = "Filtrar";
         content = document.querySelector('.sidebar');
+
       }else{
         modalTitle.innerText = "Ordenar";
         content = document.querySelector('.select-options');
@@ -362,6 +362,11 @@ function modalFunction(productList: Product[]){
         modal.style.display = "none";
         document.querySelector("body").style.overflow = "";
       }
+
+      // Make the dropdown for Filter modal
+      document.querySelectorAll('#modal-content .sidebar-title').forEach(filterTitle => {
+        filterTitle.addEventListener('click', toggleDropdown)
+      });
 
     
     });
@@ -385,6 +390,13 @@ function filterListener(productList: Product[]){
       productRenderHelper(filteredProducts);
     });
   });
+}
+
+function toggleDropdown(dropdownTitle: Event){
+  const target = dropdownTitle.target as HTMLElement;
+  const sibling = target.nextElementSibling as HTMLElement
+  const display = sibling.style.display;
+  sibling.style.display = display === "flex" ? "none" : "flex";
 }
 
 async function main() {
@@ -432,6 +444,10 @@ async function main() {
       // Filter function listener
 
       document.getElementById("clean-filter").addEventListener("click", () => clearForm(productListNormalized));
+
+      if(window.innerWidth < 768){
+        
+      }
 
     }
   }catch(err){

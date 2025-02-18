@@ -230,8 +230,8 @@ input[type="checkbox"]{
 }
 
 #filter-size .options-wrapper{
-  display: grid;
-  grid-template-columns: repeat(4, auto);
+  flex-wrap: wrap;
+  flex-direction: row;
   grid-gap: 4px;
 
   &>div, label{
